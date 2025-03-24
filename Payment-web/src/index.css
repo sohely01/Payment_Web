@@ -1,0 +1,36 @@
+.visa-logo figure {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.visa-logo img {
+  max-width: 60px;
+  height: auto;
+  transition: transform 0.3s ease;
+}
+
+.visa-logo img:hover {
+  transform: scale(1.1);
+}
+
+
+
+
+.box_content {
+  margin-top: 5%;
+  background-color: rgba(255, 255, 255, 0.85);
+  padding: 40px;
+  border-radius: 12px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+
+.box_edit{
+  display: flex;
+  justify-content: center;
+}
