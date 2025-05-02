@@ -5,14 +5,17 @@ import HomePage from "./Pages/HomePage";
 import PricingPage from "./Pages/PricingPage";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import SignUp from "./Pages/SignUp";
-import SignUpD from "./Dashboard/SignUpD";
-import SignInD from "./Dashboard/SignInD";
-import Dashboard from "./Dashboard/Dashboard";
-import EditHomePage from "./Dashboard/EditHomePage";
-import EditAboutPage from "./Dashboard/EditAboutPage";
-import EditFeaturePage from "./Dashboard/EditFeaturePage";
-import EditPrcingPage from "./Dashboard/EditPricingPage";
-import EditContactPage from "./Dashboard/EditContactpage";
+import SignUpD from "./components/Dashboard/SignUpD";
+import SignInD from "./components/Dashboard/SignInD";
+
+
+import Dashboard from "./components/Dashboard/Dashboard";
+import EditHomePage from "./components/Dashboard/EditHomePage";
+import EditAboutPage from "./components/Dashboard/EditAboutPage";
+import EditFeaturePage from "./components/Dashboard/EditFeaturePage";
+import EditPrcingPage from "./components/Dashboard/EditPricingPage";
+import Login from "./Pages/Login";
+import { EditContactPage } from "./components";
 
 function App() {
   return (
@@ -32,12 +35,14 @@ function App() {
           <Route path="/editfeature" element={<EditFeaturePage />} />
           <Route path="/editpricing" element={<EditPrcingPage />} />
           <Route path="/editcontact" element={<EditContactPage />} />
+          <Route path="/login" element={<Login />} />
 
 
 
 
 
-          
+
+
           <Route path="/signup" element={<SignUp />} />
 
         </Routes>

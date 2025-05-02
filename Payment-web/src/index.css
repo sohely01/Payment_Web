@@ -30,7 +30,38 @@
 }
 
 
-.box_edit{
+.box_edit {
   display: flex;
   justify-content: center;
+}
+
+
+.signINBTN h1 {
+  color: black !important;
+}
+
+
+h1 {
+
+  font-size: 54px !important;
+  font-weight: bold !important;
+}
+
+
+h2 {
+
+  font-size: 22px;
+  font-weight: bold !important;
+}
+
+h3 {
+
+  font-size: 20px !important;
+  font-weight: bold !important;
+}
+
+
+a {
+
+  font-size: 15px !important;
 }
