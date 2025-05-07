@@ -30,7 +30,7 @@ const Home_Hero = ({ loading, error, data }) => {
             data-aos="fade-up"
             className="col-md-6 d-flex flex-column align-items-md-start align-items-center justify-content-center mb-4 mb-md-0"
           >
-            <h1 className="mb-3 text-white">{heading || "No Heading"}</h1>
+            <h1 className="mb-3 text-white" style={{ lineHeight: '70px' }}>{heading || "No Heading"}</h1>
             <h3 className="mb-4" style={{ color: "white" }}>
               {description || "No description available."}
             </h3>

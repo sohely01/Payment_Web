@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 const EditHomePage = () => {
   const [sections, setSections] = useState([]);
@@ -21,17 +22,21 @@ const EditHomePage = () => {
     try {
       const res = await axios.post("http://localhost:8989/api/v1/findAllsection");
       if (res.data?.status === "success") {
-        const parsedData = res.data.data.map((item) => {
-          let parsedSectionData = [];
-          try {
-            parsedSectionData = item.sectionData
-              ? JSON.parse(item.sectionData)
-              : [];
-          } catch (err) {
-            console.warn("Invalid JSON in sectionData:", item.sectionData);
-          }
-          return { ...item, sectionData: parsedSectionData };
-        });
+        const targetIds = [1, 7, 9, 37, 14, 24]; // ✅ Only include these IDs
+        const parsedData = res.data.data
+          .filter(item => targetIds.includes(Number(item.id))) // ✅ Convert id to number
+          .map((item) => {
+            let parsedSectionData = [];
+            try {
+              parsedSectionData = item.sectionData
+                ? JSON.parse(item.sectionData)
+                : [];
+            } catch (err) {
+              console.warn("Invalid JSON in sectionData:", item.sectionData);
+            }
+            return { ...item, sectionData: parsedSectionData };
+          });
+
         setSections(parsedData);
       } else {
         alert("Failed to load sections");
@@ -136,7 +141,48 @@ const EditHomePage = () => {
 
   return (
     <div className="container mt-5">
-      <h2>Edit Homepage Sections</h2>
+      <h2>Edit Sections</h2>
+
+      <p style={{ textAlign: 'center', fontSize: "33px", color: "#db9b1e", fontWeight: 'bold' }}>This is a  Home Screen</p>
+      <div className="container" style={{ display: 'flex', justifyContent: "end" }}>
+        <div className="box">
+          <div className="col-md-12">
+
+
+            <div className="dropdown">
+              <button className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Edit Screen
+              </button>
+              <ul className="dropdown-menu">
+                <li>
+
+                  <a className="dropdown-item" style={{ color: "white" }}>Home</a></li>
+
+                <li>   <Link to='/editabout'
+                  className="dropdown-item" style={{ color: "white" }}>About</Link></li>
+
+
+                <li>   <Link to='/editfeature'
+                  className="dropdown-item" style={{ color: "white" }}>Feature</Link></li>
+
+
+                <li>   <Link to='/editpricing'
+                  className="dropdown-item" style={{ color: "white" }}>Pricing</Link></li>
+
+                <li>   <Link to='/editcontact'
+                  className="dropdown-item" style={{ color: "white" }}>Contact</Link></li>
+
+
+
+
+
+              </ul>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
       <table className="table table-bordered mt-4">
         <thead>
           <tr>
@@ -156,7 +202,7 @@ const EditHomePage = () => {
                   ? section.sectionData.map((item, i) => (
                     <div key={i}>
                       <strong>{item.heading}</strong>
-                      <p>{item.description}</p>
+                      <p style={{ margin: "5px" }}>{item.description}</p>
                     </div>
                   ))
                   : <em>No data</em>}

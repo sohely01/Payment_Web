@@ -1,119 +1,322 @@
-import React, { useState, useRef } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import React, { useEffect, useRef, useState } from "react";
+import axios from "axios";
+import { Link } from "react-router-dom";
 
-const EditFeaturePage = () => {
-  const [sections, setSections] = useState([
-    {
-      id: 1,
-      heading: "Feature One",
-      description: "Description for feature one",
-      sectionData: "Extra section data here",
-    },
-    {
-      id: 2,
-      heading: "Feature Two",
-      description: "Description for feature two",
-      sectionData: "Extra section data here too",
-    },
-  ]);
 
-  const [editingSection, setEditingSection] = useState(null);
-  const [editedHeading, setEditedHeading] = useState("");
-  const [editedDescription, setEditedDescription] = useState("");
+const EditAboutPage = () => {
+  const [sections, setSections] = useState([]);
+  const [editIndex, setEditIndex] = useState(null);
+  const [formData, setFormData] = useState({
+    id: null,
+    heading: "",
+    description: "",
+    sectionData: "",
+  });
+  const [dynamicForm, setDynamicForm] = useState([]);
+  const modalRef = useRef();
 
-  const modalRef = useRef(null);
+  useEffect(() => {
+    fetchSections();
+  }, []);
 
-  const handleEdit = (index) => {
+  const fetchSections = async () => {
+    try {
+      const res = await axios.post("http://localhost:8989/api/v1/findAllsection");
+      if (res.data?.status === "success") {
+        const targetIds = [18, 37, 20, 31]; // ✅ Only include these IDs
+        const parsedData = res.data.data
+          .filter(item => targetIds.includes(Number(item.id))) // ✅ Convert id to number
+          .map((item) => {
+            let parsedSectionData = [];
+            try {
+              parsedSectionData = item.sectionData
+                ? JSON.parse(item.sectionData)
+                : [];
+            } catch (err) {
+              console.warn("Invalid JSON in sectionData:", item.sectionData);
+            }
+            return { ...item, sectionData: parsedSectionData };
+          });
+
+        setSections(parsedData);
+      } else {
+        alert("Failed to load sections");
+      }
+    } catch (err) {
+      console.error("Error fetching sections:", err);
+    }
+  };
+
+
+  const handleEditClick = (index) => {
+    setEditIndex(index);
     const section = sections[index];
-    setEditingSection({ ...section, index });
-    setEditedHeading(section.heading);
-    setEditedDescription(section.description);
 
-    // Show the modal
+    const formatted = section.sectionData.map((item, i) => ({
+      key: Date.now() + i,
+      input1: item.heading || '',
+      input2: item.description || '',
+    }));
+
+    setDynamicForm(formatted);
+    setFormData({ ...section });
+
     const modal = new window.bootstrap.Modal(modalRef.current);
     modal.show();
   };
 
-  const handleSave = () => {
-    if (editingSection !== null) {
-      const updatedSections = [...sections];
-      updatedSections[editingSection.index] = {
-        ...editingSection,
-        heading: editedHeading,
-        description: editedDescription,
-      };
-      setSections(updatedSections);
-    }
+  const handleInputChange = (index, field, value) => {
+    const updatedForm = [...dynamicForm];
+    updatedForm[index][field] = value;
+    setDynamicForm(updatedForm);
+  };
 
-    // Close modal manually
+  const handleAddCard = () => {
+    setDynamicForm([
+      ...dynamicForm,
+      { key: Date.now(), input1: "", input2: "" },
+    ]);
+  };
+
+  const handleRemoveCard = (index) => {
+    const updatedForm = [...dynamicForm];
+    updatedForm.splice(index, 1);
+    setDynamicForm(updatedForm);
+  };
+
+  const handleUpdateClick = async () => {
+    try {
+      const updatedSectionData = dynamicForm.map((item) => ({
+        heading: item.input1,
+        description: item.input2,
+      }));
+
+      const res = await axios.post("http://localhost:8989/api/v1/updatesection", {
+        id: formData.id,
+        heading: formData.heading,
+        description: formData.description,
+        sectionData: JSON.stringify(updatedSectionData),
+      });
+
+      if (res.data?.status === "success") {
+        const updatedSections = [...sections];
+        updatedSections[editIndex] = {
+          ...formData,
+          sectionData: updatedSectionData,
+        };
+        setSections(updatedSections);
+
+        const modal = window.bootstrap.Modal.getInstance(modalRef.current);
+        modal.hide();
+
+        setEditIndex(null);
+        setFormData({
+          id: null,
+          heading: "",
+          description: "",
+          sectionData: "",
+        });
+        setDynamicForm([]);
+
+        alert("Section updated successfully!");
+      } else {
+        alert(res.data.message || "Failed to update section");
+      }
+    } catch (err) {
+      console.error("Error updating section:", err);
+      alert("Error updating section.");
+    }
+  };
+
+  const handleCancel = () => {
     const modal = window.bootstrap.Modal.getInstance(modalRef.current);
     modal.hide();
+    setEditIndex(null);
+    setFormData({
+      id: null,
+      heading: "",
+      description: "",
+      sectionData: "",
+    });
+    setDynamicForm([]);
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="overflow-x-auto shadow rounded" style={{ border: "1px solid black" }}>
-        <table className="min-w-full border border-gray-300 border-collapse">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 border text-left">Heading</th>
-              <th className="px-6 py-3 border text-left">Description</th>
-              <th className="px-6 py-3 border text-left">Section Data</th>
-              <th className="px-6 py-3 border text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sections.map((section, idx) => (
-              <tr key={section.id}>
-                <td className="px-6 py-4 border">{section.heading}</td>
-                <td className="px-6 py-4 border">{section.description}</td>
-                <td className="px-6 py-4 border">{section.sectionData}</td>
-                <td className="px-6 py-4 border flex justify-center">
-                  <button
-                    onClick={() => handleEdit(idx)}
-                    className="px-3 py-1 bg-black text-white rounded hover:bg-gray-800"
-                  >
-                    Edit
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="container mt-5">
+      <h2>Edit Sections</h2>
+      <p style={{ textAlign: 'center', fontSize: "33px", color: "#db9b1e", fontWeight: 'bold' }}>This is a Feature Screen</p>
+
+      <div className="container" style={{ display: 'flex', justifyContent: "end" }}>
+        <div className="box">
+          <div className="col-md-12">
+
+
+            <div className="dropdown">
+              <button className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Edit Screen
+              </button>
+              <ul className="dropdown-menu">
+                <li>   <Link to='/edithome'
+                  className="dropdown-item" style={{ color: "white" }}>Home</Link></li>
+
+                <li>   <Link to='/editabout'
+                  className="dropdown-item" style={{ color: "white" }}>About</Link></li>
+
+
+                <li>   <Link to='/editfeature'
+                  className="dropdown-item" style={{ color: "white" }}>Feature</Link></li>
+
+
+                <li>   <Link to='/editpricing'
+                  className="dropdown-item" style={{ color: "white" }}>Pricing</Link></li>
+
+                <li>   <Link to='/editcontact'
+                  className="dropdown-item" style={{ color: "white" }}>Contact</Link></li>
+
+
+
+
+
+              </ul>
+            </div>
+
+          </div>
+        </div>
       </div>
 
+
+      <table className="table table-bordered mt-4">
+        <thead>
+          <tr>
+            <th style={{ textAlign: 'center', fontWeight: 'bold' }}>Heading</th>
+            <th style={{ textAlign: 'center', fontWeight: 'bold' }}>Description</th>
+            <th style={{ textAlign: 'center', fontWeight: 'bold' }}>Section Data</th>
+            <th style={{ textAlign: 'center', fontWeight: 'bold' }}>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sections.map((section, index) => (
+            <tr key={index}>
+              <td>{section.heading}</td>
+              <td>{section.description}</td>
+              <td>
+                {Array.isArray(section.sectionData)
+                  ? section.sectionData.map((item, i) => (
+                    <div key={i}>
+                      <strong>{item.heading}</strong>
+                      <p style={{ margin: "5px" }}>{item.description}</p>
+                    </div>
+                  ))
+                  : <em>No data</em>}
+              </td>
+              <td style={{ textAlign: 'center' }}>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => handleEditClick(index)}
+                >
+                  Edit
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
       {/* Modal */}
-      <div className="modal fade" id="editModal" tabIndex="-1" aria-hidden="true" ref={modalRef}>
-        <div className="modal-dialog modal-dialog-centered">
+      <div
+        className="modal fade"
+        ref={modalRef}
+        tabIndex="-1"
+        aria-labelledby="exampleModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-lg modal-dialog-scrollable">
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">Edit Section</h5>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+              <button
+                type="button"
+                className="btn-close"
+                onClick={handleCancel}
+              ></button>
             </div>
             <div className="modal-body">
               <div className="mb-3">
-                <label className="form-label" style={{ fontWeight: 'bold' }}>Heading</label>
+                <label>Heading</label>
                 <input
                   type="text"
                   className="form-control"
-                  value={editedHeading}
-                  onChange={(e) => setEditedHeading(e.target.value)}
+                  value={formData.heading}
+                  onChange={(e) =>
+                    setFormData({ ...formData, heading: e.target.value })
+                  }
                 />
               </div>
               <div className="mb-3">
-                <label className="form-label" style={{ fontWeight: 'bold' }}>Description</label>
+                <label>Description</label>
                 <textarea
                   className="form-control"
-                  rows="3"
-                  value={editedDescription}
-                  onChange={(e) => setEditedDescription(e.target.value)}
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                 />
               </div>
+              <div className="container">
+                <div className="box">
+                  <div className="col-md-12" style={{ display: "flex", justifyContent: 'end' }}>
+                    <button className="btn btn-success" onClick={handleAddCard}>
+                      Add Card
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+
+
+              <h6>Section Data Cards</h6>
+              {dynamicForm.map((item, index) => (
+                <div key={item.key} className="border rounded p-3 mb-3">
+                  <input
+                    type="text"
+                    placeholder="Heading"
+                    className="form-control mb-2"
+                    value={item.input1}
+                    onChange={(e) =>
+                      handleInputChange(index, "input1", e.target.value)
+                    }
+                  />
+                  <textarea
+                    placeholder="Description"
+                    className="form-control mb-2"
+                    value={item.input2}
+                    onChange={(e) =>
+                      handleInputChange(index, "input2", e.target.value)
+                    }
+                  />
+                  <button
+                    className="btn btn-danger btn-sm"
+                    onClick={() => handleRemoveCard(index)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+
             </div>
             <div className="modal-footer">
-              <button className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button className="btn btn-primary" onClick={handleSave}>Save</button>
+              <button
+                className="btn btn-secondary"
+                onClick={handleCancel}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleUpdateClick}
+              >
+                Update Section
+              </button>
             </div>
           </div>
         </div>
@@ -122,4 +325,4 @@ const EditFeaturePage = () => {
   );
 };
 
-export default EditFeaturePage;
+export default EditAboutPage;

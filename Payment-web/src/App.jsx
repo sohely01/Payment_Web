@@ -16,6 +16,8 @@ import EditFeaturePage from "./components/Dashboard/EditFeaturePage";
 import EditPrcingPage from "./components/Dashboard/EditPricingPage";
 import Login from "./Pages/Login";
 import { EditContactPage } from "./components";
+import SignInForm from "./components/Dashboard/SignInForm";
+import LoginForm from "./components/Dashboard/LoginForm";
 
 function App() {
   return (
@@ -28,6 +30,13 @@ function App() {
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/adminsignup" element={<SignUpD />} />
+          <Route path="/signinform" element={<SignInForm />} />
+          <Route path="/loginform" element={<LoginForm />} />
+
+
+
+
+
           <Route path="/adminsignin" element={<SignInD />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/edithome" element={<EditHomePage />} />
@@ -35,7 +44,7 @@ function App() {
           <Route path="/editfeature" element={<EditFeaturePage />} />
           <Route path="/editpricing" element={<EditPrcingPage />} />
           <Route path="/editcontact" element={<EditContactPage />} />
-          <Route path="/login" element={<Login />} />
+
 
 
 
